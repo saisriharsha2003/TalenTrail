@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from pdfminer.high_level import extract_text
 from docx import Document
@@ -10,7 +10,7 @@ with open("Test/mock_test_jd.json", "r") as f:
     MOCK_DATA = json.load(f)
 
 load_dotenv()
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def extract_job_text(file_path):
     return extract_text(file_path)
@@ -231,10 +231,9 @@ def parse_job_description(input_data):
         {text[:6000]}
     """
 
-    response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=prompt
-    )
+    model = genai.GenerativeModel("gemini-flash-latest")
+
+    response = model.generate_content(prompt)
 
     result = response.text
 

@@ -1,15 +1,14 @@
 import json
 import re
 from flask import Flask, request, jsonify
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
 
 load_dotenv()
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def calculate_score(resume, job):
     prompt = f"""
@@ -90,10 +89,9 @@ DO NOT RETURN ANYTHING ELSE
 ----------------------------------
 """
 
-    response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=prompt
-    )
+    model = genai.GenerativeModel("gemini-flash-latest")
+
+    response = model.generate_content(prompt)
 
     res = response.text
 

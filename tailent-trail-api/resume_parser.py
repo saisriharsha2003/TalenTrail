@@ -3,7 +3,7 @@ import re
 import json
 from datetime import datetime
 from openai import OpenAI
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from pdfminer.high_level import extract_text
 import docx2txt
@@ -12,9 +12,7 @@ from Test import mock_data
 
 
 load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-
-client = genai.Client(api_key=api_key)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def extract_resume_text(file_path):
     if file_path.endswith(".pdf"):
@@ -111,6 +109,7 @@ def enrich_experience_skills(data):
     return data
 
 def resume_ner_gpt(file_path):
+    
     text = extract_resume_text(file_path)
 
     phones, emails, detected_skills = extract_basic_info(text)
@@ -382,10 +381,9 @@ Before returning JSON, ensure:
 RESUME TEXT:
 {text[:12000]}
 """
-    response = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=prompt
-    )
+    model = genai.GenerativeModel("gemini-flash-latest")
+
+    response = model.generate_content(prompt)
 
     result = response.text
 
