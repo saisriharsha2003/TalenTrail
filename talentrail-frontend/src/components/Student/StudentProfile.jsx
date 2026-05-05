@@ -1530,16 +1530,18 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
                                   },
                                 );
 
-                                if (!res || !res.data) {
-                                  throw new Error("Empty response");
-                                }
-
                                 const file = new Blob([res.data], {
                                   type: "application/pdf",
                                 });
                                 const fileURL = URL.createObjectURL(file);
 
-                                window.open(fileURL, "_blank");
+                                // ✅ THIS IS THE FIX
+                                const link = document.createElement("a");
+                                link.href = fileURL;
+                                link.target = "_blank";
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
                               } catch (err) {
                                 console.error(err.response || err);
                                 notify("failed", "Unable to open resume");
