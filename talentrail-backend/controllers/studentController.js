@@ -13,6 +13,7 @@ const fs = require("fs");
 const nodemailer = require("nodemailer");
 const axios = require("axios");
 const FormData = require("form-data");
+const path = require("path");   
 // const fetch = require('node-fetch');
 
 const { spawn } = require("child_process");
@@ -614,6 +615,8 @@ const parseJsonData = async (data) => {
 const parseResume = async (req, res, next) => {
   const { id } = req;
 
+  let filePath = null; 
+
   try {
     const foundStudent = await Student.findById(id).exec();
     if (!foundStudent) {
@@ -626,17 +629,14 @@ const parseResume = async (req, res, next) => {
       });
     }
 
-    const filePath = req.file.path;
-
-    console.log("📤 Sending file to Flask...");
-    console.log("URL:", process.env.RESUME_PARSER);
+    filePath = req.file.path;
+    console.log("Uploading file:", req.file.filename);
 
     const formData = new FormData();
-
     formData.append("file", fs.createReadStream(filePath));
 
     const response = await axios.post(
-      process.env.RESUME_PARSER, // e.g. http://localhost:5000/parse_resume
+      process.env.RESUME_PARSER,
       formData,
       {
         headers: {
@@ -644,21 +644,35 @@ const parseResume = async (req, res, next) => {
         },
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
-      },
+      }
     );
 
-    fs.unlinkSync(filePath);
+    if (foundStudent.resume) {
+      const oldPath = path.join(__dirname, '../uploads', foundStudent.resume);
+
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    foundStudent.resume = req.file.filename;
+    await foundStudent.save();
 
     return res.status(201).json({
       success: "Resume processed successfully. Please fill remaining fields",
       parsedOutput: response.data,
     });
+
   } catch (err) {
     console.error("❌ ERROR:", err.response?.data || err.message);
+
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
     next(err);
   }
 };
-
 const postPersonal = async (req, res, next) => {
   const { fullName, fatherName, motherName, dateOfBirth, gender } = req.body;
   if (!fullName || !fatherName || !motherName || !dateOfBirth || !gender)
