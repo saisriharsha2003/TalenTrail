@@ -1,32 +1,35 @@
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
-const profileUpload = multer({
-    fileFilter: (req, file, callback) => {
-        if (
-            file.mimetype === 'image/jpg' ||
-            file.mimetype === 'image/png' ||
-            file.mimetype === 'image/jpeg'
-        ) {
-            callback(null, true);
-        } else {
-            callback(null, false);
-        }
-    },
-    limits: {
-        fileSize: 1024 * 1024 * 2
-    }
-});
+const uploadPath = path.join(__dirname, '../uploads');
+
+if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+}
 
 const storage = multer.diskStorage({
     destination: function (req, file, callback) {
-        if (!fs.existsSync('/tmp/')) {
-            fs.mkdirSync('/tmp/');
-        }
-        callback(null, '/tmp/');
+        callback(null, uploadPath);
     },
     filename: (req, file, callback) => {
-        callback(null, Date.now() + "-" + file.originalname);
+        const uniqueName = Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
+        callback(null, uniqueName);
+    }
+});
+
+const profileUpload = multer({
+    fileFilter: (req, file, callback) => {
+        const allowedTypes = ['image/jpg', 'image/png', 'image/jpeg'];
+
+        if (allowedTypes.includes(file.mimetype)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Only JPG, JPEG, PNG allowed'), false);
+        }
+    },
+    limits: {
+        fileSize: 1024 * 1024 * 2 // 2MB
     }
 });
 
@@ -36,11 +39,11 @@ const resumeUpload = multer({
         if (file.mimetype === 'application/pdf') {
             callback(null, true);
         } else {
-            callback(null, false);
+            callback(new Error('Only PDF files allowed'), false);
         }
     },
     limits: {
-        fileSize: 1024 * 1024 * 2
+        fileSize: 1024 * 1024 * 2 // 2MB
     }
 });
 
@@ -57,11 +60,11 @@ const jdUpload = multer({
         if (allowedTypes.includes(file.mimetype)) {
             callback(null, true);
         } else {
-            callback(null, false);
+            callback(new Error('Invalid file type'), false);
         }
     },
     limits: {
-        fileSize: 1024 * 1024 * 2
+        fileSize: 1024 * 1024 * 2 
     }
 });
 
