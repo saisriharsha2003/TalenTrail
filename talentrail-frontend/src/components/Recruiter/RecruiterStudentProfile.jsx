@@ -10,6 +10,7 @@ const RecruiterStudentProfile = () => {
 
   const [studentData, setStudentData] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [actionLoading, setActionLoading] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -82,29 +83,72 @@ const RecruiterStudentProfile = () => {
                   {app.status === "pending" ? (
                     <>
                       <button
-                        className="btn btn-success btn-sm rounded-pill px-3"
+                        disabled={actionLoading === app._id}
+                        className="btn btn-success btn-sm rounded-pill px-3 d-flex align-items-center gap-2"
                         onClick={async () => {
-                          await axios.post("/recruiter/application", {
-                            applicationId: app._id,
-                            status: "selected",
-                          });
-                          fetchData(); // 🔥 refresh UI
-                        }}
-                      >
-                        Select
-                      </button>
+                          try {
+                            setActionLoading(app._id);
 
-                      <button
-                        className="btn btn-outline-danger btn-sm rounded-pill px-3"
-                        onClick={async () => {
-                          await axios.post("/recruiter/application", {
-                            applicationId: app._id,
-                            status: "rejected",
-                          });
-                          fetchData(); // 🔥 refresh UI
+                            await axios.post("/recruiter/application", {
+                              applicationId: app._id,
+                              status: "selected",
+                            });
+
+                            setApplications((prev) =>
+                              prev.map((a) =>
+                                a._id === app._id
+                                  ? { ...a, status: "selected" }
+                                  : a,
+                              ),
+                            );
+                          } catch (err) {
+                            notify("failed", err?.response?.data?.message);
+                          } finally {
+                            setActionLoading(null);
+                          }
                         }}
                       >
-                        Reject
+                        {actionLoading === app._id ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm"></span>
+                          </>
+                        ) : (
+                          "Select"
+                        )}
+                      </button>
+                      <button
+                        disabled={actionLoading === app._id}
+                        className="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-2"
+                        onClick={async () => {
+                          try {
+                            setActionLoading(app._id);
+
+                            await axios.post("/recruiter/application", {
+                              applicationId: app._id,
+                              status: "rejected",
+                            });
+
+                            setApplications((prev) =>
+                              prev.map((a) =>
+                                a._id === app._id
+                                  ? { ...a, status: "rejected" }
+                                  : a,
+                              ),
+                            );
+                          } catch (err) {
+                            notify("failed", err?.response?.data?.message);
+                          } finally {
+                            setActionLoading(null);
+                          }
+                        }}
+                      >
+                        {actionLoading === app._id ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm"></span>
+                          </>
+                        ) : (
+                          "Reject"
+                        )}
                       </button>
                     </>
                   ) : (
