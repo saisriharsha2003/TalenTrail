@@ -706,14 +706,14 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
                       <label className="ms-2">Gender</label>
                     </div>
                     {!isReadOnly && (
-                    <div className="col-12 mt-4 text-end">
-                      <button
-                        type="submit"
-                        className="btn btn-primary px-5 rounded-pill fw-bold"
-                      >
-                        Save Changes
-                      </button>
-                    </div>
+                      <div className="col-12 mt-4 text-end">
+                        <button
+                          type="submit"
+                          className="btn btn-primary px-5 rounded-pill fw-bold"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
                     )}
                   </form>
                 </div>
@@ -804,14 +804,14 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
                       <label className="ms-2">Address</label>
                     </div>
                     {!isReadOnly && (
-                    <div className="col-12 mt-4">
-                      <button
-                        type="submit"
-                        className="btn btn-outline-primary w-100 rounded-pill fw-bold"
-                      >
-                        Update Contact
-                      </button>
-                    </div>
+                      <div className="col-12 mt-4">
+                        <button
+                          type="submit"
+                          className="btn btn-outline-primary w-100 rounded-pill fw-bold"
+                        >
+                          Update Contact
+                        </button>
+                      </div>
                     )}
                   </form>
                 </div>
@@ -1123,14 +1123,14 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
                       </div>
                     </div>
                     {!isReadOnly && (
-                    <div className="text-end mt-4">
-                      <button
-                        type="submit"
-                        className="btn btn-primary px-5 rounded-pill fw-bold"
-                      >
-                        Save Academic Details
-                      </button>
-                    </div>
+                      <div className="text-end mt-4">
+                        <button
+                          type="submit"
+                          className="btn btn-primary px-5 rounded-pill fw-bold"
+                        >
+                          Save Academic Details
+                        </button>
+                      </div>
                     )}
                   </form>
                 </div>
@@ -1518,22 +1518,60 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
 
                         <div className="d-flex gap-2">
                           <button
-                            className="btn btn-dark btn-sm rounded-pill px-3"
+                            className="btn btn-dark btn-sm rounded-pill px-3 d-flex align-items-center gap-2"
                             style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              window.open(`${BASE_URL}/uploads/${resume}`, "_blank")
-                            }
+                            onClick={async () => {
+                              try {
+                                const res = await axios.get(
+                                  "/student/resume/view",
+                                  {
+                                    responseType: "blob",
+                                  },
+                                );
+
+                                const file = new Blob([res.data], {
+                                  type: "application/pdf",
+                                });
+                                const fileURL = URL.createObjectURL(file);
+
+                                window.open(fileURL, "_blank");
+                              } catch (err) {
+                                notify("failed", "Unable to open resume");
+                              }
+                            }}
                           >
                             📄 View
                           </button>
 
-                          <a
-                            href={`${BASE_URL}/uploads/${resume}`}
-                            download
-                            className="btn btn-outline-secondary btn-sm rounded-pill px-3"
+                          <button
+                            className="btn btn-outline-secondary btn-sm rounded-pill px-3 d-flex align-items-center gap-2"
+                            onClick={async () => {
+                              try {
+                                const res = await axios.get(
+                                  "/student/resume/view",
+                                  {
+                                    responseType: "blob",
+                                  },
+                                );
+
+                                const file = new Blob([res.data], {
+                                  type: "application/pdf",
+                                });
+                                const fileURL = URL.createObjectURL(file);
+
+                                const link = document.createElement("a");
+                                link.href = fileURL;
+                                link.download = "resume.pdf";
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+                              } catch (err) {
+                                notify("failed", "Unable to download resume");
+                              }
+                            }}
                           >
                             ⬇ Download
-                          </a>
+                          </button>
                         </div>
                       </>
                     ) : (

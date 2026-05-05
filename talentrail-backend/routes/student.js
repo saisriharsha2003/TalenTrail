@@ -15,6 +15,7 @@ router.get('/applied', studentController.getAppliedJobs);
 router.get('/jobProfile/:jobId', studentController.getJobProfile);
 router.get('/profile', studentController.getProfile);
 router.get('/notifications', studentController.getNotifications);
+router.get('/resume/view', studentController.getMyResume);
 
 router.post('/capabilityCal', studentController.capabilityCal);
 router.post('/application', studentController.postAppliedJob);

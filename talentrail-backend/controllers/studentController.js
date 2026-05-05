@@ -673,6 +673,33 @@ const parseResume = async (req, res, next) => {
     next(err);
   }
 };
+
+const getMyResume = async (req, res, next) => {
+  const { id } = req;
+
+  try {
+    const foundStudent = await Student.findById(id).exec();
+
+    if (!foundStudent || !foundStudent.resume) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+
+    const filePath = path.join(__dirname, '../uploads', foundStudent.resume);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+
+    res.sendFile(filePath);
+
+  } catch (err) {
+    next(err);
+  }
+};
+
 const postPersonal = async (req, res, next) => {
   const { fullName, fatherName, motherName, dateOfBirth, gender } = req.body;
   if (!fullName || !fatherName || !motherName || !dateOfBirth || !gender)
@@ -1224,4 +1251,5 @@ module.exports = {
   deleteWork,
   putSkills,
   postSkills,
+  getMyResume,
 };
