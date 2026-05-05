@@ -436,13 +436,12 @@ RESUME TEXT:
         {json.dumps(data)}
     """
 
-    summary_res = client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=summary_prompt
-    )
+    response = model.generate_content(summary_prompt)
 
-    if summary_res.text:
-        data["summary"] = summary_res.text.strip()
+    summary_res = response.text
+
+    if summary_res:
+        data["summary"] = summary_res.strip()
 
     return data
 
