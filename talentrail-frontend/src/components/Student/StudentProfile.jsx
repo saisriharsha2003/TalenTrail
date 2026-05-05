@@ -1519,6 +1519,7 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
                         <div className="d-flex gap-2">
                           <button
                             className="btn btn-dark btn-sm rounded-pill px-3"
+                            style={{ cursor: "pointer" }}
                             onClick={() =>
                               window.open(`${BASE_URL}/uploads/${resume}`, "_blank")
                             }
@@ -1527,7 +1528,7 @@ const StudentProfile = ({ isReadOnly = false, externalData = null }) => {
                           </button>
 
                           <a
-                            href={`${BASE_URL}/${resume}`}
+                            href={`${BASE_URL}/uploads/${resume}`}
                             download
                             className="btn btn-outline-secondary btn-sm rounded-pill px-3"
                           >
